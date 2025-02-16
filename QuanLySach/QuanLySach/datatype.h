@@ -17,7 +17,7 @@ struct member {
 	char memberId[10];
 	char name[20];
 	char phone[10];
-	bool status;
+	int status;
 	struct Book BrrowedBooks[];
 };
 

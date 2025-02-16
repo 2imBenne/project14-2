@@ -1,3 +1,4 @@
+//main
 #include <stdio.h>
 #include <stdlib.h>
 #include "function.h"
@@ -21,7 +22,7 @@ int main() {
                 continue;
             }
 
-            if (sscanf(inputBuffer, "%d", &choice) != 1) {
+            if (sscanf(inputBuffer, "%d", &choice) >= 4) {
                 printf("Error: Invalid input. Please enter a number.\n");
                 continue;
             }
@@ -33,6 +34,11 @@ int main() {
             case 1:
                 loginAdmin();
                 break;  
+            case 2:
+            	displayMenuLibrary();
+				break;
+			case 3:
+				break;	    
             case 0:
                 printf("Exiting program. Thank you!\n");
                 break;

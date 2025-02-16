@@ -1,14 +1,19 @@
+//function.c
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h> 
-#define MAX_BOOKS 100
 #include "datatype.h"
 #include <ctype.h>
 #include <conio.h>
+#define MAX_BOOKS 100
+#define MAX_MEMBERS 100 
+#define MAX_ADMIN 50
 
 struct Book books[MAX_BOOKS];
+struct member Members[MAX_MEMBERS]; 
 int bookCount = 0;
-#define MAX_ADMIN 50
+int memberCount = 0; 
+
 
 void refresh(){
 	printf("Press Enter to continue: ");
@@ -16,7 +21,7 @@ void refresh(){
 	system("cls");
 } 
 
-void menuSach() {
+void menuSach() { 
     printf("***Book Management System Using C***\n");
     printf("\n");
     printf("               MENU                     \n");
@@ -30,8 +35,7 @@ void menuSach() {
     printf("      [7] Read Books From File.\n");
     printf("      [0] Exit the Program.\n");
     printf("      ==========================\n");
-   
-    
+     
 }
 
 void displayMenuLibrary(){
@@ -128,7 +132,6 @@ void displayBooks() {
     do {
        
        
-        
          valid = 0;
         do {
             char inputBuffer[10];
@@ -571,7 +574,7 @@ void editBook() {
 	    char inputBuffer[50];
 	    printf("Enter the Publication Date (dd mm yyyy): ");
 	    fgets(inputBuffer, sizeof(inputBuffer), stdin);
-	    inputBuffer[strcspn(inputBuffer, "\n")] = '\0'; // Lo?i b? k� t? newline
+	    inputBuffer[strcspn(inputBuffer, "\n")] = '\0'; // loai bo ky tu xuong dong 
 	
 	    if (strlen(inputBuffer) == 0) {
 	        printf("Error: Publication date cannot be empty. Please enter a valid date.\n");
@@ -1018,7 +1021,7 @@ void menuManagement() {
     printf("      ==========================\n");
     printf("      [1] Library management.\n");
     printf("      [2] Customer management.\n");
-	printf("      [3] Exit the Program.\n");
+	printf("      [0] Exit the Program.\n");
     printf("      ==========================\n");
    
 }
@@ -1041,7 +1044,7 @@ void displayMenuManagement(){
                 continue;
             }
 
-            if (sscanf(inputBuffer, "%d", &choice) != 1) {
+            if (sscanf(inputBuffer, "%d", &choice) > 2) {
                 printf("Error: Invalid input. Please enter a number.\n");
                 continue;
             }
@@ -1053,6 +1056,9 @@ void displayMenuManagement(){
             case 1:
                 displayMenuLibrary();
                 break;
+            case 2:
+            	displayMenuMembers();
+				break;    
             case 0:
                 printf("Exiting program. Thank you!\n");
                 break;
@@ -1062,6 +1068,349 @@ void displayMenuManagement(){
     } while (choice != 0);
 }
 
+//=====================================fuction for member============================================= 
+
+void menuManageMembers() { 
+    printf("***Book Management System Using C***\n");
+    printf("\n");
+    printf("           Member Management Menu                     \n");
+    printf("      ==========================\n");
+    printf("      [1] Add A New Member.\n");
+    printf("      [2] Show All Member.\n");
+    printf("      [3] Edit A Member.\n");
+    printf("      [4] Search A Member.\n");
+    printf("      [5] Read Members From File.\n");
+    printf("      [0] Exit the Program.\n");
+    printf("      ==========================\n");
+     
+}
+
+ 
+void displayMenuMembers(){
+	refresh();
+	int choice;
+	int valid;
+    do {
+        menuManageMembers();
+        valid = 0;
+         do {
+            char inputBuffer1[10];
+            printf("Enter your choice: ");
+            fgets(inputBuffer1, sizeof(inputBuffer1), stdin);
+
+            inputBuffer1[strcspn(inputBuffer1, "\n")] = '\0'; 
+
+            if (strlen(inputBuffer1) == 0) {
+                printf("Error: Choice cannot be empty. Please try again.\n");
+                continue;
+            }
+
+            if (sscanf(inputBuffer1, "%d", &choice) != 1) {
+                printf("Error: Invalid input. Please enter a number.\n");
+                continue;
+            }
+
+            valid = 1;
+        } while (!valid);
+		
+        switch (choice) {
+            case 1:
+                addMember(); 
+                break;
+            case 2:
+                displayMembers();
+                break;
+            case 3:
+                searchBookByTitle();
+                break;
+            case 4:
+                editBook();
+                break;
+            case 5:
+            	ReadListMemberFromFile();
+            	break; 
+            case 0:
+                printf("Exiting program. Thank you!\n");
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    } while (choice != 0);
+}
+
+
+
+void ReadListMemberFromFile() {
+	refresh();
+    FILE *file = fopen("member.txt", "rb");
+    
+    if (file == NULL) {
+        printf("Error: Could not open file for reading member.txt.\n");
+        return;
+    }
+    
+  
+    while (fscanf(file, "%[^,], %[^,], %[^,], %d\n", 
+                   Members[memberCount].memberId,
+                   Members[memberCount].name,
+                   Members[memberCount].phone,
+				   Members[memberCount].status) ){
+				   
+        memberCount++;
+        
+        if (memberCount >= MAX_MEMBERS) {
+            break;
+        }
+    }
+    
+    fclose(file);
+    
+    printf("Data loaded successfully from member.txt\n");
+}
+
+
+void saveMemberToFile() {
+    FILE *file = fopen("member.txt", "w"); 
+    if (file == NULL) {
+        printf("Error: Could not open file for writing member.txt.\n");
+        return;
+    }
+	int i;
+    for (i = 0; i < memberCount; i++) {
+        fprintf(file, "%s, %s, %s, %d\n", 
+                Members[i].memberId,
+                Members[i].name,
+                Members[i].phone,
+				Members[i].status);
+    }
+
+    fclose(file);
+    printf("Data saved successfully to member.txt\n");
+}
+
+
+
+void addMember() {
+	system("color 3"); 
+    refresh();
+    printf("                         **** Add A New Member ****\n");
+    if (memberCount >= MAX_MEMBERS) {
+        printf("Cannot add member, list is full.\n");
+        return;
+    }
+
+    struct member newMember;
+    int valid;
+
+    do {
+        valid = 1;
+        char inputBuffer1[10];
+
+        printf("Enter the Member ID: ");
+        fgets(inputBuffer1, sizeof(inputBuffer1), stdin);
+
+        inputBuffer1[strcspn(inputBuffer1, "\n")] = '\0';
+
+        if (strlen(inputBuffer1) == 0) {
+            printf("Error: Member ID cannot be empty. Please try again.\n");
+            valid = 0;
+        } else if (strlen(inputBuffer1) > 10) {
+            printf("Error: Member ID must be <= 10 characters. Please try again.\n");
+            valid = 0;
+        } else {
+            int i;
+            for (i = 0; i < memberCount; i++) {
+                if (strcmp(Members[i].memberId, inputBuffer1) == 0) {
+                    printf("Error: Member ID '%s' already exists.\n", inputBuffer1);
+                    valid = 0;
+                    break;
+                }
+            }
+        }
+
+        if (valid) {
+            strcpy(newMember.memberId, inputBuffer1);
+        }
+
+    } while (!valid);
+
+    do {
+        valid = 1;
+        char inputBuffer1[30];
+        printf("Enter the Name: ");
+        fgets(inputBuffer1, sizeof(inputBuffer1), stdin);
+        inputBuffer1[strcspn(inputBuffer1, "\n")] = '\0';
+
+        if (strlen(inputBuffer1) == 0) {
+            printf("Error: Name cannot be empty. Please try again.\n");
+            valid = 0;
+        } else if (strlen(inputBuffer1) > 20) {
+            printf("Error: Name must be <= 20 characters. Please try again.\n");
+            valid = 0;
+        } else {
+            int i;
+            for (i = 0; i < memberCount; i++) {
+                if (strcmp(Members[i].name, inputBuffer1) == 0) {
+                    printf("Error: Name '%s' already exists.\n", inputBuffer1);
+                    valid = 0;
+                    break;
+                }
+            }
+        }
+
+        if (valid) {
+            strcpy(newMember.name, inputBuffer1);
+        }
+
+    } while (!valid);
+
+    if (strcmp(newMember.memberId, newMember.name) == 0) {
+        printf("Error: Member ID and Name cannot be the same. Please enter different values.\n");
+        return;
+    }
+
+    do {
+        valid = 1;
+        char inputBuffer1[20];
+        printf("Enter the Phone number: ");
+        fgets(inputBuffer1, sizeof(inputBuffer1), stdin);
+        inputBuffer1[strcspn(inputBuffer1, "\n")] = '\0';
+
+        if (strlen(inputBuffer1) == 0) {
+            printf("Error: Phone number cannot be empty. Please try again.\n");
+            valid = 0;
+        } else if (strlen(inputBuffer1) > 10) {
+            printf("Error: Phone number must be <= 10 characters. Please try again.\n");
+            valid = 0;
+        } else {
+            valid = 1;
+        }
+
+        if (valid) {
+            strcpy(newMember.phone, inputBuffer1);
+        }
+
+    } while (!valid);
+
+
+    Members[memberCount] = newMember;
+    memberCount++;
+
+    saveMemberToFile();
+
+    printf("\n");
+    printf("Member Added Successfully.\n");
+    printf("\n");
+
+    char choice;
+    do {
+        valid = 0;
+        do {
+            char inputBuffer[10];
+            printf("Go back (b)? or Exit (0)?: ");
+            fgets(inputBuffer, sizeof(inputBuffer), stdin);
+
+            inputBuffer[strcspn(inputBuffer, "\n")] = '\0';
+
+            if (strlen(inputBuffer) == 0) {
+                printf("Error: Choice cannot be empty. Please try again.\n");
+                continue;
+            }
+
+            if (sscanf(inputBuffer, "%s", &choice) != 1) {
+                printf("Error: Invalid input. Please try again.\n");
+                continue;
+            }
+
+            valid = 1;
+        } while (!valid);
+
+        if (choice == 'b') {
+            return;
+        } else if (choice == '0') {
+            printf("==========Thank You==========\n");
+            printf("==========See You Soon==========\n\n");
+            printf("--------------------------------------");
+            exit(0);
+        } else {
+            printf("Invalid choice. Please enter 'b' or '0'.\n");
+        }
+
+    } while (choice != 'b' && choice != '0');
+
+    printf("\n");
+    printf("\n");
+    printf("\n");
+}
+
+
+
+void displayMembers() {
+   
+    if (memberCount == 0) {
+        printf("There are no members in the list.\n");
+        return;
+    }
+
+    printf("                         **** All Member ****\n");
+    printf("|============|===========================|======================|============|\n");
+    printf("| %-10s | %-25s | %-20s | %-10d |\n", "ID", "Name", "Phone", "Status");
+    printf("|============|===========================|======================|============|\n");
+
+	int i;  
+    for (i = 0; i < memberCount; i++) {
+        printf("| %-10s | %-25s | %-20s | %-10d |\n", 
+               Members[i].memberId, 
+               Members[i].name, 
+               Members[i].phone, 
+               Members[i].status);
+      
+        printf("|------------|---------------------------|----------------------|------------|\n");
+    }
+
+    printf("\n");
+    char choice;
+    int valid;
+    do {
+       
+       
+         valid = 0;
+        do {
+            char inputBuffer2[10];
+             printf("Go back (b)? or Exit (0)?: ");
+            fgets(inputBuffer2, sizeof(inputBuffer2), stdin);
+
+            inputBuffer2[strcspn(inputBuffer2, "\n")] = '\0'; 
+
+            if (strlen(inputBuffer2) == 0) {
+                printf("Error: Choice cannot be empty. Please try again.\n");
+                continue;
+            }
+
+            if (sscanf(inputBuffer2, "%s", &choice) != 1) {
+                printf("Error: Invalid input. Please try again.\n");
+                continue;
+            }
+
+            valid = 1;
+        } while (!valid);
+        
+        if (choice == 'b') {
+            return; 
+        } else if (choice == '0') {
+            printf("==========Thank You==========\n");
+            printf("==========See You Soon==========\n\n");
+            printf("--------------------------------------");
+            exit(0); 
+        } else {
+            printf("Invalid choice. Please enter 'b' or '0'.\n");
+        }
+    } while (choice != 'b' && choice != '0');
+    printf("\n");
+    printf("\n");
+    printf("\n");
+}
+ 
 
  
 
